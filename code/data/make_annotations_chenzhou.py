@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 """
 用于裁剪、标注郴州医生图像数据
 输出：原图、标注图、MASK图、ROI图像
@@ -16,7 +10,6 @@ import json
 import numpy
 import scipy.misc as misc
 
-# In[2]:
 
 """
 检查文件，参数（目录，后缀）
@@ -33,10 +26,7 @@ def find_file(directory, extension):
     return target_files
 
 
-# In[5]:
-
-
-def read_json_file(directory, filename, output_directory):
+def read_json_file(directory, json_folder_name, filename, output_directory):
     print("[INFO] read_json_file: " + directory + "/" + filename)
     prefix_filename = filename[:-5]
     print(prefix_filename)
@@ -45,9 +35,10 @@ def read_json_file(directory, filename, output_directory):
     jpg_file = directory + "/" + jpg_name
     if os.path.exists(jpg_file):
         image = misc.imread(jpg_file)
-        with io.open(directory + "/" + filename,'r',encoding='gbk') as load_f:
+        with io.open(json_folder_name + "/" + filename,'r',encoding='gbk') as load_f:
             load_dict = json.load(load_f)
             annotation_image = create_image(jpg_file)
+            box_image = create_image(jpg_file)
             height = image.shape[0]
             width  = image.shape[1]
             mask_image = numpy.zeros((height,width))
@@ -55,26 +46,27 @@ def read_json_file(directory, filename, output_directory):
                 label_name = mark["label"].replace(',','')
                 # print(mark["points"])
                 a = numpy.array(mark["points"], numpy.int32)
-                cv2.fillConvexPoly(mask_image, a, 2)
-                pre_point = mark["points"][0]
+                cv2.fillConvexPoly(mask_image, a, (255, 255, 255))
+                # cv2.polylines(annotation_image, a, True, color = (0, 0, 255), thickness = 1) # 图像，点集，是否闭合，颜色，线条粗细
+                point_size = len(mark["points"])
+                pre_point = mark["points"][point_size - 1]
                 for points in mark["points"]:
-                    if pre_point != points:
-                        cv2.line(annotation_image, (points[0], points[1]), (pre_point[0], pre_point[1]), (0, 0, 255))
-                        pre_point = points
+                    cv2.line(annotation_image, (points[0], points[1]), (pre_point[0], pre_point[1]), color = (0, 0, 255), thickness = 1)
+                    pre_point = points
                 lmax = numpy.max(a[1:len(a)][:, 0])
                 lmin = numpy.min(a[1:len(a)][:, 0])
                 hmax = numpy.max(a[1:len(a)][:, 1])
                 hmin = numpy.min(a[1:len(a)][:, 1])
                 roi_image = image[hmin: hmax, lmin: lmax]
+                # annotation_image = cv2.rectangle(annotation_image, (lmin, hmin), (lmax, hmax), color = (0, 0, 255), thickness = 1) # 图像，点集，是否闭合，颜色，线条粗细
+                box_image = cv2.rectangle(box_image, (lmin, hmin), (lmax, hmax), color = (125,215,145), thickness = 3) # 图像，点集，是否闭合，颜色，线条粗细
             save_jpg_file(output_directory + "/annotation/" + label_name + "_" + output_jpg_name, annotation_image)
             save_jpg_file(output_directory + "/mask/" + label_name + "_" + output_jpg_name, mask_image)
             save_jpg_file(output_directory + "/roi/" + label_name + "_" + output_jpg_name, roi_image)
             save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
+            save_jpg_file(output_directory + "/box/" + label_name + "_" + output_jpg_name, box_image)
 
-#     return image
-# In[6]:
-
-
+            
 def create_image(jpg_file):
     image = misc.imread(jpg_file)
     height = image.shape[0]
@@ -83,34 +75,33 @@ def create_image(jpg_file):
     return new_image
 
 
-# In[7]:
-
-
 def save_jpg_file(jpg_output_file, output_image):
     cv2.imwrite(jpg_output_file, output_image)
 
 
-# In[8]:
-
 # 郴州数据目录
-folder_name = '/home/songruoning/data/chenzhou/'
+image_folder_name = '../../data/origin/chenzhou/image/'
+json_folder_name = '../../data/origin/chenzhou/json/'
 # 郴州数据输出目录
-output_folder_name = '/home/songruoning/data/preprocess/chenzhou/'
+output_folder_name = '../../data/preprocess/chenzhou/'
 # 标注图像输出目录
 if os.path.exists(output_folder_name + "/annotation/") == False:
-    os.mkdir(output_folder_name + "/annotation/")
+    os.makedirs(output_folder_name + "/annotation/")
 # mask图像输出目录
 if os.path.exists(output_folder_name + "/mask/") == False:
-    os.mkdir(output_folder_name + "/mask/")
+    os.makedirs(output_folder_name + "/mask/")
 # ROI图像输出目录
 if os.path.exists(output_folder_name + "/roi/") == False:
-    os.mkdir(output_folder_name + "/roi/")
+    os.makedirs(output_folder_name + "/roi/")
+# 原始图像输出目录
+if os.path.exists(output_folder_name + "/box/") == False:
+    os.makedirs(output_folder_name + "/box/")
 # 原始图像输出目录
 if os.path.exists(output_folder_name + "/image/") == False:
-    os.mkdir(output_folder_name + "/image/")
+    os.makedirs(output_folder_name + "/image/")
 # json文件列表
-json_files = find_file(folder_name, '.json')
+json_files = find_file(json_folder_name, '.json')
 for json_file in json_files:
-    read_json_file(folder_name, json_file, output_folder_name)
+    read_json_file(image_folder_name, json_folder_name, json_file, output_folder_name)
 
 # binary_map = image * 255
