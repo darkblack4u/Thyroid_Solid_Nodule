@@ -68,7 +68,7 @@ def read_json_file(directory, json_folder_name, filename, output_directory):
             # save_jpg_file(output_directory + "/annotation/" + label_name + "_" + output_jpg_name, annotation_image)
             # save_jpg_file(output_directory + "/mask/" + label_name + "_" + output_jpg_name, mask_image)
                 save_jpg_file(output_directory + "/roi/" + label_name + "_" + output_jpg_name, roi_image)
-            # save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
+            save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
             save_jpg_file(output_directory + "/box/" + label_name + "_" + output_jpg_name, box_image)
 
             
@@ -102,8 +102,8 @@ if os.path.exists(output_folder_name + "/roi/") == False:
 if os.path.exists(output_folder_name + "/box/") == False:
     os.makedirs(output_folder_name + "/box/")
 # 原始图像输出目录
-# if os.path.exists(output_folder_name + "/image/") == False:
-#     os.makedirs(output_folder_name + "/image/")
+if os.path.exists(output_folder_name + "/image/") == False:
+    os.makedirs(output_folder_name + "/image/")
 # json文件列表
 # json_files = find_file(json_folder_name, '.json')
 # json_files = ['13THY420180717154528804T.json', '39THY1420180720115201073T.json']
