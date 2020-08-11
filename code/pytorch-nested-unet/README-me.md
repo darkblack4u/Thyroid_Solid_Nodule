@@ -3,14 +3,8 @@
 ### 操作
 
 ```
-conda create --name unetplusplus -y python=3.6
-conda activate unetplusplus
-conda install jupyter notebook
-nohup jupyter notebook --no-browser --port=80 --ip=0.0.0.0 --allow-root &
-```
+# 预处理数据ll
 
-```
-# 预处理数据
 # python preprocess_dsb2018.py
 # 执行训练
 # CUDA_VISIBLE_DEVICES=1 python train.py --dataset dsb2018_96 --arch NestedUNet

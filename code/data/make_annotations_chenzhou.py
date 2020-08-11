@@ -8,7 +8,7 @@ import os
 import io
 import json
 import numpy
-import scipy.misc as misc
+import imageio
 
 
 """
@@ -34,7 +34,7 @@ def read_json_file(directory, json_folder_name, filename, output_directory):
     output_jpg_name = jpg_name.replace('-','').replace('(','').replace(')','').replace('_','').replace(' ','')
     jpg_file = directory + "/" + jpg_name
     if os.path.exists(jpg_file):
-        image = misc.imread(jpg_file)
+        image = imageio.imread(jpg_file)
         with io.open(json_folder_name + "/" + filename,'r',encoding='gbk') as load_f:
             load_dict = json.load(load_f)
             annotation_image = create_image(jpg_file)
@@ -59,16 +59,16 @@ def read_json_file(directory, json_folder_name, filename, output_directory):
                 hmin = numpy.min(a[1:len(a)][:, 1])
                 roi_image = image[hmin: hmax, lmin: lmax]
                 # annotation_image = cv2.rectangle(annotation_image, (lmin, hmin), (lmax, hmax), color = (0, 0, 255), thickness = 1) # 图像，点集，是否闭合，颜色，线条粗细
-                box_image = cv2.rectangle(box_image, (lmin, hmin), (lmax, hmax), color = (125,215,145), thickness = 3) # 图像，点集，是否闭合，颜色，线条粗细
-            save_jpg_file(output_directory + "/annotation/" + label_name + "_" + output_jpg_name, annotation_image)
-            save_jpg_file(output_directory + "/mask/" + label_name + "_" + output_jpg_name, mask_image)
-            save_jpg_file(output_directory + "/roi/" + label_name + "_" + output_jpg_name, roi_image)
-            save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
+                box_image = cv2.rectangle(box_image, (lmin, hmin), (lmax, hmax), color = (0, 255, 255), thickness = 3) # 图像，点集，是否闭合，颜色，线条粗细
+            # save_jpg_file(output_directory + "/annotation/" + label_name + "_" + output_jpg_name, annotation_image)
+            # save_jpg_file(output_directory + "/mask/" + label_name + "_" + output_jpg_name, mask_image)
+            # save_jpg_file(output_directory + "/roi/" + label_name + "_" + output_jpg_name, roi_image)
+            # save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
             save_jpg_file(output_directory + "/box/" + label_name + "_" + output_jpg_name, box_image)
 
             
 def create_image(jpg_file):
-    image = misc.imread(jpg_file)
+    image = imageio.imread(jpg_file)
     height = image.shape[0]
     width = image.shape[1]
     new_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
