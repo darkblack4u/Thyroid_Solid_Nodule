@@ -27,9 +27,9 @@ def find_file(directory, extension):
 
 
 def read_json_file(directory, json_folder_name, filename, output_directory, dataset, num):
-    print("[INFO] read_json_file: " + directory + "/" + filename)
+    # print("[INFO] read_json_file: " + directory + "/" + filename)
     prefix_filename = filename[:-5]
-    print(prefix_filename)
+    # print(prefix_filename)
     jpg_name = prefix_filename + ".jpg"
     output_jpg_name = jpg_name.replace('-','').replace('(','').replace(')','').replace('_','').replace(' ','')
     jpg_file = directory + "/" + jpg_name
@@ -48,11 +48,11 @@ def read_json_file(directory, json_folder_name, filename, output_directory, data
                 a = numpy.array(mark["points"], numpy.int32)
                 # cv2.fillConvexPoly(mask_image, a, (255, 255, 255))
                 # cv2.polylines(annotation_image, a, True, color = (0, 0, 255), thickness = 1) # 图像，点集，是否闭合，颜色，线条粗细
-                point_size = len(mark["points"])
-                pre_point = mark["points"][point_size - 1]
-                for points in mark["points"]:
-                    cv2.line(annotation_image, (points[0], points[1]), (pre_point[0], pre_point[1]), color = (0, 0, 255), thickness = 5)
-                    pre_point = points
+                # point_size = len(mark["points"])
+                # pre_point = mark["points"][point_size - 1]
+                # for points in mark["points"]:
+                #     cv2.line(annotation_image, (points[0], points[1]), (pre_point[0], pre_point[1]), color = (0, 0, 255), thickness = 5)
+                #     pre_point = points
                 lmax = numpy.max(a[1:len(a)][:, 0])
                 lmin = numpy.min(a[1:len(a)][:, 0])
                 hmax = numpy.max(a[1:len(a)][:, 1])
@@ -64,7 +64,7 @@ def read_json_file(directory, json_folder_name, filename, output_directory, data
                     'area': int(bbox_width) * int(bbox_height),
                     'bbox': [int(lmin), int(hmin), int(bbox_width), int(bbox_height)],
                     'category_id': int(0),
-                    'id': int(bbox_num),
+                    'id': int(bbox_num) + int(num),
                     'image_id': int(num),
                     'iscrowd': int(0),
                     # mask, 矩形是从左上角点按顺时针的四个顶点
@@ -122,7 +122,7 @@ json_files = find_file(json_folder_name, '.json')
 dataset = {'categories':[],'images':[],'annotations':[]}
 dataset['categories'].append({'id': 0, 'name': 'nodule', 'supercategory': 'mark'})
 for num, json_file in enumerate(json_files):
-    read_json_file(image_folder_name, json_folder_name, json_file, output_folder_name, dataset, num)
+    read_json_file(image_folder_name, json_folder_name, json_file, output_folder_name, dataset, int(num) * 10)
 json_name = os.path.join(output_folder_name, 'annotations/{}.json'.format('json'))
 with open(json_name, 'w') as f:
     json.dump(dataset, f)
