@@ -1,3 +1,4 @@
+# 验证COCO
 from pycocotools.coco import COCO
 import cv2
 import os
