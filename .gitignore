@@ -2,3 +2,4 @@
 data/origin/
 data/preprocess/
 code/mmdetection/data
+*.out
