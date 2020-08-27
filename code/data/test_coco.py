@@ -18,10 +18,18 @@ def showNimages(annFile, imageFile, resultFile):
     image_id = []  # 存储的是要提取图片id
     # for i in range(len(list)):
     #     image_id.append(list[i][0])
-    image_id.append(int(0))
+    image_id.append(int(1))
+    image_id.append(int(10))
+
+    image_id.append(int(100))
+    image_id.append(int(1000))
+    image_id.append(int(10000))
+
     coco = COCO(annFile)
  
     for i in range(len(image_id)):
+        imageIds = coco.getImgIds(imgIds=image_id[i])
+        images = coco.load_imgs(imageIds)
         annIds = coco.getAnnIds(imgIds=image_id[i], iscrowd=0)
         anns = coco.loadAnns(annIds)
         print(annIds)
@@ -40,9 +48,12 @@ def showNimages(annFile, imageFile, resultFile):
     print("生成图片存在{}".format(resultFile))
 
 if __name__ == "__main__":
-    annFile = '../../data/preprocess/coco/chenzhou/annotations/json.json'
-    imageFile = '../../data/preprocess/coco/chenzhou/images/'
-    resultFile = '../../data/preprocess/coco/chenzhou/test/'
+    # annFile = '../../data/preprocess/coco/chenzhou/annotations/json.json'
+    # imageFile = '../../data/preprocess/coco/chenzhou/images/'
+    # resultFile = '../../data/preprocess/coco/chenzhou/test/'
+    annFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/image.json'
+    imageFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/image/'
+    resultFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/test/'
     if os.path.exists(resultFile) == False:
         os.makedirs(resultFile)
     showNimages(annFile, imageFile, resultFile)
