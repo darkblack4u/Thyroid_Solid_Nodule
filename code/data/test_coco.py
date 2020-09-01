@@ -1,4 +1,5 @@
 # 验证COCO
+# 需要修改下面的数据路径
 from pycocotools.coco import COCO
 import cv2
 import os
@@ -22,8 +23,6 @@ def showNimages(annFile, imageFile, resultFile):
     image_id.append(int(10))
 
     image_id.append(int(100))
-    image_id.append(int(1000))
-    image_id.append(int(10000))
 
     coco = COCO(annFile)
  
@@ -32,12 +31,14 @@ def showNimages(annFile, imageFile, resultFile):
         images = coco.load_imgs(imageIds)
         annIds = coco.getAnnIds(imgIds=image_id[i], iscrowd=0)
         anns = coco.loadAnns(annIds)
+        print(images)
         print(annIds)
         print(anns)
         file_name = str(images[0]['file_name'])
         image = cv2.imread(imageFile + file_name)
 
         # image = cv2.imread(imageFile + anns. + '.jpg')
+        print(imageFile + file_name)
 
         for n in range(len(anns)):
             x, y, w, h = anns[n]['bbox']
@@ -51,8 +52,8 @@ if __name__ == "__main__":
     # annFile = '../../data/preprocess/coco/chenzhou/annotations/json.json'
     # imageFile = '../../data/preprocess/coco/chenzhou/images/'
     # resultFile = '../../data/preprocess/coco/chenzhou/test/'
-    annFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/image.json'
-    imageFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/image/'
+    annFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/annotations/images.json'
+    imageFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/images/'
     resultFile = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/test/'
     if os.path.exists(resultFile) == False:
         os.makedirs(resultFile)

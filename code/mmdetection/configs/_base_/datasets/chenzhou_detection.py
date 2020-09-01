@@ -1,5 +1,5 @@
 dataset_type = 'ChenzhouDataset'
-data_root = 'data/chenzhou/'
+data_root = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -32,17 +32,17 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/json.json',
+        ann_file=data_root + 'annotations/images.json',
         img_prefix=data_root + 'images/',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/json.json',
-        img_prefix=data_root + 'images/',
+        ann_file=data_root + 'annotations/validations.json',
+        img_prefix=data_root + 'validations/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/json.json',
-        img_prefix=data_root + 'images/',
+        ann_file=data_root + 'annotations/tests.json',
+        img_prefix=data_root + 'tests/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='bbox')

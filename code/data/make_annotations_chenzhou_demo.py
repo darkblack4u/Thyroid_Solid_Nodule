@@ -67,7 +67,9 @@ def read_json_file(directory, json_folder_name, filename, output_directory):
                     box_image = cv2.rectangle(box_image, (lmin - 10, hmin - 10), (lmax + 10, hmax + 10), color = (0, 0, 245), thickness = 3, lineType=cv2.LINE_AA) # 图像，点集，是否闭合，颜色，线条粗细
             # save_jpg_file(output_directory + "/annotation/" + label_name + "_" + output_jpg_name, annotation_image)
             # save_jpg_file(output_directory + "/mask/" + label_name + "_" + output_jpg_name, mask_image)
+                mask_roi_image = mask_image[hmin: hmax, lmin: lmax]
                 save_jpg_file(output_directory + "/roi/" + label_name + "_" + output_jpg_name, roi_image)
+                save_jpg_file(output_directory + "/mask_roi/" + label_name + "_" + output_jpg_name, mask_roi_image)
             save_jpg_file(output_directory + "/image/" + label_name + "_" + output_jpg_name, image)
             save_jpg_file(output_directory + "/box/" + label_name + "_" + output_jpg_name, box_image)
 
@@ -95,6 +97,9 @@ output_folder_name = '../../data/preprocess/demo/'
 # # mask图像输出目录
 # if os.path.exists(output_folder_name + "/mask/") == False:
 #     os.makedirs(output_folder_name + "/mask/")
+# ROI图像输出目录
+if os.path.exists(output_folder_name + "/mask_roi/") == False:
+    os.makedirs(output_folder_name + "/mask_roi/")
 # ROI图像输出目录
 if os.path.exists(output_folder_name + "/roi/") == False:
     os.makedirs(output_folder_name + "/roi/")

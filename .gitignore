@@ -1,5 +1,8 @@
 .vscode/
 data/origin/
-data/preprocess/
+data/preprocess/chenzhou
+data/preprocess/chenzhou_aug
+data/preprocess/coco
 code/mmdetection/data
 *.out
+code/data/.ipynb_checkpoints/
