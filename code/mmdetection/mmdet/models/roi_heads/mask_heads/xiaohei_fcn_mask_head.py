@@ -1,44 +1,38 @@
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule, kaiming_init
+from mmcv.cnn import ConvModule, build_upsample_layer
+from mmcv.ops import Conv2d
+from mmcv.ops.carafe import CARAFEPack
+from torch.nn.modules.utils import _pair
 
-from mmdet.core import auto_fp16, force_fp32
-from mmdet.models.builder import HEADS
+from mmdet.core import auto_fp16, force_fp32, mask_target
+from mmdet.models.builder import HEADS, build_loss
+
+BYTES_PER_FLOAT = 4
+# TODO: This memory limit may be too much or too little. It would be better to
+# determine it based on available resources.
+GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 
 @HEADS.register_module()
-class XiaoheiFusedSemanticHead(nn.Module):
-    r"""Multi-level fused semantic segmentation head.
-
-    .. code-block:: none
-
-        in_1 -> 1x1 conv ---
-                            |
-        in_2 -> 1x1 conv -- |
-                           ||
-        in_3 -> 1x1 conv - ||
-                          |||                  /-> 1x1 conv (mask prediction)
-        in_4 -> 1x1 conv -----> 3x3 convs (*4)
-                            |                  \-> 1x1 conv (feature)
-        in_5 -> 1x1 conv ---
-    """  # noqa: W605
+class XiaoheiFCNMaskHead(nn.Module):
 
     def __init__(self,
-                 num_ins,
-                 fusion_level,
                  num_convs=4,
+                 roi_feat_size=14,
                  in_channels=256,
                  conv_kernel_size=3,
                  conv_out_channels=256,
-                 num_classes=2,
+                 num_classes=80,
                  class_agnostic=False,
-                 ignore_label=255,
                  upsample_cfg=dict(type='deconv', scale_factor=2),
                  conv_cfg=None,
                  norm_cfg=None,
                  loss_mask=dict(
                      type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
-        super(XiaoheiFusedSemanticHead, self).__init__()
+        super(FCNMaskHead, self).__init__()
         self.upsample_cfg = upsample_cfg.copy()
         if self.upsample_cfg['type'] not in [
                 None, 'deconv', 'nearest', 'bilinear', 'carafe'
@@ -47,32 +41,20 @@ class XiaoheiFusedSemanticHead(nn.Module):
                 f'Invalid upsample method {self.upsample_cfg["type"]}, '
                 'accepted methods are "deconv", "nearest", "bilinear", '
                 '"carafe"')
-        self.num_ins = num_ins
-        self.fusion_level = fusion_level
         self.num_convs = num_convs
+        # WARN: roi_feat_size is reserved and not used
+        self.roi_feat_size = _pair(roi_feat_size)
         self.in_channels = in_channels
         self.conv_kernel_size = conv_kernel_size
         self.conv_out_channels = conv_out_channels
+        self.upsample_method = self.upsample_cfg.get('type')
         self.scale_factor = self.upsample_cfg.pop('scale_factor', None)
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.ignore_label = ignore_label
-        self.loss_weight = loss_weight
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.fp16_enabled = False
         self.loss_mask = build_loss(loss_mask)
-
-        self.lateral_convs = nn.ModuleList()
-        for i in range(self.num_ins):  # 根据num_ins确定 1 * 1卷积个数
-            self.lateral_convs.append(
-                ConvModule(
-                    self.in_channels,
-                    self.in_channels,
-                    1,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    inplace=False))
 
         self.convs = nn.ModuleList()
         for i in range(self.num_convs):
@@ -87,25 +69,6 @@ class XiaoheiFusedSemanticHead(nn.Module):
                     padding=padding,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg))
-        # for i in range(self.num_convs):  # 卷积层数
-        #     in_channels = self.in_channels if i == 0 else conv_out_channels
-        #     self.convs.append(
-        #         ConvModule(
-        #             in_channels,
-        #             conv_out_channels,
-        #             3,
-        #             padding=1,
-        #             conv_cfg=self.conv_cfg,
-        #             norm_cfg=self.norm_cfg))
-        # self.conv_embedding = ConvModule(
-        #     conv_out_channels,
-        #     conv_out_channels,
-        #     1,
-        #     conv_cfg=self.conv_cfg,
-        #     norm_cfg=self.norm_cfg)
-        # self.conv_logits = nn.Conv2d(conv_out_channels, self.num_classes, 1)
-
-        # self.criterion = nn.CrossEntropyLoss(ignore_index=ignore_label)
         upsample_in_channels = (
             self.conv_out_channels if self.num_convs > 0 else in_channels)
         upsample_cfg_ = self.upsample_cfg.copy()
@@ -152,15 +115,7 @@ class XiaoheiFusedSemanticHead(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     @auto_fp16()
-    def forward(self, feats):
-        x = self.lateral_convs[self.fusion_level](feats[self.fusion_level])
-        fused_size = tuple(x.shape[-2:]) #### 找到聚合的这一层
-        for i, feat in enumerate(feats):
-            if i != self.fusion_level:
-                feat = F.interpolate(
-                    feat, size=fused_size, mode='bilinear', align_corners=True) #### 上采样或者下采样
-                x += self.lateral_convs[i](feat) #### 1 * 1矩阵
-
+    def forward(self, x):
         for conv in self.convs:
             x = conv(x)
         if self.upsample is not None:
@@ -169,13 +124,6 @@ class XiaoheiFusedSemanticHead(nn.Module):
                 x = self.relu(x)
         mask_pred = self.conv_logits(x)
         return mask_pred
-
-        for i in range(self.num_convs): #### num_convs轮卷积
-            x = self.convs[i](x)
-
-        mask_pred = self.conv_logits(x)
-        x = self.conv_embedding(x)
-        return mask_pred, x
 
     def get_targets(self, sampling_results, gt_masks, rcnn_train_cfg):
         pos_proposals = [res.pos_bboxes for res in sampling_results]
@@ -287,6 +235,7 @@ class XiaoheiFusedSemanticHead(nn.Module):
         for i in range(N):
             cls_segms[labels[i]].append(im_mask[i].cpu().numpy())
         return cls_segms
+
 
 def _do_paste_mask(masks, boxes, img_h, img_w, skip_empty=True):
     """Paste instance masks acoording to boxes.
