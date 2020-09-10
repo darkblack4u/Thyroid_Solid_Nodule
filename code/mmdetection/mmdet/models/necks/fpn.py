@@ -112,6 +112,7 @@ class FPN(nn.Module):
         self.lateral_convs = nn.ModuleList()
         self.fpn_convs = nn.ModuleList()
 
+        ######## 先是1*1，后是3*3
         for i in range(self.start_level, self.backbone_end_level):
             l_conv = ConvModule(
                 in_channels[i],
@@ -166,7 +167,7 @@ class FPN(nn.Module):
         """Forward function."""
         assert len(inputs) == len(self.in_channels)
 
-        # build laterals
+        # build laterals 建立每一刻度的卷积
         laterals = [
             lateral_conv(inputs[i + self.start_level])
             for i, lateral_conv in enumerate(self.lateral_convs)

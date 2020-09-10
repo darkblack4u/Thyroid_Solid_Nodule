@@ -4,6 +4,7 @@ from .cascade_rcnn import CascadeRCNN
 from .cornernet import CornerNet
 from .fast_rcnn import FastRCNN
 from .faster_rcnn import FasterRCNN
+from .xiaohei_faster_rcnn import XiaoheiFasterRCNN
 from .fcos import FCOS
 from .fovea import FOVEA
 from .fsaf import FSAF
@@ -24,5 +25,7 @@ __all__ = [
     'ATSS', 'BaseDetector', 'SingleStageDetector', 'TwoStageDetector', 'RPN',
     'FastRCNN', 'FasterRCNN', 'MaskRCNN', 'CascadeRCNN', 'HybridTaskCascade',
     'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN', 'RepPointsDetector',
-    'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet'
+    'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet', 'XiaoheiFasterRCNN'
 ]
+
+###### 在Detector这里增加了XiaoheiFasterRCNN ######

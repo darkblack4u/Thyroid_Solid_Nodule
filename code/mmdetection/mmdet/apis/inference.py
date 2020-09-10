@@ -112,8 +112,13 @@ def inference_detector(model, img):
 
     # forward the model
     with torch.no_grad():
-        result = model(return_loss=False, rescale=True, **data)
-    return result
+        result, x = model(return_loss=False, rescale=True, **data)
+    return result, x
+    
+    ############ with torch.no_grad(): ############
+    ############     result = model(return_loss=False, rescale=True, **data) ############
+    ############ return result ############
+    
 
 
 async def async_inference_detector(model, img):

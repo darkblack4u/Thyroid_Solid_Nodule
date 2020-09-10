@@ -353,7 +353,7 @@ class ResNet(nn.Module):
         (1, 512, 1, 1)
     """
 
-    arch_settings = {
+    arch_settings = { ################ 两个结构见 https://www.jianshu.com/p/e502e4b43e6d
         18: (BasicBlock, (2, 2, 2, 2)),
         34: (BasicBlock, (3, 4, 6, 3)),
         50: (Bottleneck, (3, 4, 6, 3)),
@@ -420,7 +420,7 @@ class ResNet(nn.Module):
         self.res_layers = []
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
-            dilation = dilations[i]
+            dilation = dilations[i]   
             dcn = self.dcn if self.stage_with_dcn[i] else None
             if plugins is not None:
                 stage_plugins = self.make_stage_plugins(plugins, i)
