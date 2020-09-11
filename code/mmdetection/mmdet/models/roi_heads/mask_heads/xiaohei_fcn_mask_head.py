@@ -118,12 +118,13 @@ class XiaoheiFCNMaskHead(nn.Module):
     def forward(self, x):
         for conv in self.convs:
             x = conv(x)
+        identity = x
         if self.upsample is not None:
             x = self.upsample(x)
             if self.upsample_method == 'deconv':
                 x = self.relu(x)
         mask_pred = self.conv_logits(x)
-        return mask_pred
+        return mask_pred, identity
 
     def get_targets(self, sampling_results, gt_masks, rcnn_train_cfg):
         pos_proposals = [res.pos_bboxes for res in sampling_results]
