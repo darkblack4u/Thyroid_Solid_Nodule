@@ -15,14 +15,16 @@ model = dict(
         in_channels=[256, 512, 1024, 2048], ####### 每个刻度的输入通道数
         out_channels=256,  ####### Number of output channels (used at each scale)
         num_outs=5),   ####### Number of output scales. 输出num_outs个[1，256，h, w]的卷积
-    semantic_branch=dict( ####### 相对于Faster RCNN增加了semantic_branch FCN方法
-            type='FCNMaskHead',
-            num_convs=4,
-            in_channels=256,
-            conv_out_channels=256,
-            num_classes=80,
-            loss_mask=dict(
-                type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)),
+    semantic_head=dict( ####### 相对于Faster RCNN增加了semantic_branch FCN方法
+        type='XiaoheiFCNMaskHead',
+        with_conv_res=False,
+        num_convs=4,
+        in_channels=256,
+        conv_out_channels=256,
+        num_classes=2,
+        loss_weight=1,
+        loss_mask=dict(
+            type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)),
     rpn_head=dict(
         type='RPNHead',
         in_channels=256,
@@ -51,7 +53,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=80,
+            num_classes=2,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -101,7 +103,10 @@ train_cfg = dict(
             neg_pos_ub=-1,
             add_gt_as_proposals=True),
         pos_weight=-1,
-        debug=False))
+        debug=False),
+    semantic_branch=dict(
+        mask_size=14,
+    ))
 test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
@@ -113,7 +118,10 @@ test_cfg = dict(
     rcnn=dict(
         score_thr=0.05,
         nms=dict(type='nms', iou_threshold=0.5),
-        max_per_img=100)
+        max_per_img=100),
+    semantic_branch=dict(
+        mask_thr_binary=14,
+    )
     # soft-nms is also supported for rcnn testing
     # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05)
 )
