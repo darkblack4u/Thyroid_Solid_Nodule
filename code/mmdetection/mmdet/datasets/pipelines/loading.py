@@ -268,7 +268,10 @@ class LoadAnnotations(object):
         polygons = [np.array(p) for p in polygons]
         valid_polygons = []
         for polygon in polygons:
-            if len(polygon) % 2 == 0 and len(polygon) >= 6:
+            # if len(polygon) % 2 == 0 and len(polygon) >= 6:
+            if len(polygon)  < 20:
+                print(len(polygon))
+            if len(polygon) % 2 == 0 and len(polygon) >= 20:
                 valid_polygons.append(polygon)
         return valid_polygons
 
