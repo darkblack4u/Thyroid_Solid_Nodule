@@ -17,3 +17,11 @@ nohup jupyter notebook --no-browser --port=80 --ip=0.0.0.0 --allow-root &
 ```bash
 CUDA_VISIBLE_DEVICES=0 python tools/train.py configs/faster_rcnn/faster_rcnn_r50_fpn_1x_chenzhou.py --work-dir logs/faster_rcnn_r50_fpn_1x_chenzhou/
 ```
+
+
+
+```bash
+nohup python processXiaoheiRCNN.py >> logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_$(date +%Y%m%d%H%M).log &
+nohup python processFasterRCNN.py >> logs/faster_rcnn_r50_fpn_1x_chenzhou_$(date +%Y%m%d%H%M).log &
+nohup python processMaskRCNN.py >> logs/mask_rcnn_r50_fpn_1x_chenzhou_$(date +%Y%m%d%H%M).log &
+```

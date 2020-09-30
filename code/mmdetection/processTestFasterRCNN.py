@@ -27,14 +27,14 @@ import mmcv
 import numpy as np
 import time
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
-cfg = Config.fromfile('./configs/faster_rcnn/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou.py')
-cfg.work_dir = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_' + time.strftime("%Y%m%d%H%M", time.localtime()) + '/'
-cfg.gpu_ids = range(1)
+cfg = Config.fromfile('./configs/faster_rcnn/faster_rcnn_r50_fpn_1x_chenzhou.py')
+cfg.work_dir = 'logs/faster_rcnn_r50_fpn_1x_chenzhou_' + time.strftime("%Y%m%d%H%M", time.localtime()) + '/'
+cfg.gpu_ids = range(1,2)
 cfg.seed = 0
-cfg.total_epochs = 12
-cfg.log_config.interval = 10
+cfg.total_epochs = 50
+cfg.log_config.interval = 1000
 # Build dataset
 datasets = [build_dataset(cfg.data.train)]
 

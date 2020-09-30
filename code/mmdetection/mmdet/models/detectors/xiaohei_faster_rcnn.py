@@ -4,6 +4,7 @@ from .faster_rcnn import FasterRCNN
 import torch.nn.functional as F
 import torch
 import numpy as np
+import mmcv
 
 @DETECTORS.register_module()
 class XiaoheiFasterRCNN(FasterRCNN):
@@ -102,7 +103,9 @@ class XiaoheiFasterRCNN(FasterRCNN):
         mask_targets = []
         # device = semantic_pred.device
         device = semantic_feat.device
+        # print(img.shape)
         for gt_m in gt_masks:
+            # print(gt_m)
             gt_m = gt_m.resize(out_shape = (semantic_pred.shape[2], semantic_pred.shape[3])).to_ndarray()
             o = np.zeros((semantic_pred.shape[2], semantic_pred.shape[3]))
             for a in gt_m[::]:
@@ -111,9 +114,13 @@ class XiaoheiFasterRCNN(FasterRCNN):
             gt_m = o[np.newaxis, :]
             # print(gt_m.shape)
             gt_m = torch.from_numpy(gt_m).float().to(device)
+            # print(gt_m.shape)
             mask_targets.append(gt_m)
         if len(mask_targets) > 0:
             mask_targets = torch.cat(mask_targets)
+        # print(img_metas)
+        # print(semantic_pred.shape)                        
+
         loss_seg = self.semantic_head.loss(semantic_pred, mask_targets)
         losses['loss_semantic_seg'] = loss_seg
         attend_feat = []

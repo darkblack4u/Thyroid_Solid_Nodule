@@ -2,6 +2,8 @@
 data/origin/
 data/preprocess/chenzhou
 data/preprocess/chenzhou_aug
+data/preprocess/public
+data/preprocess/public_aug
 data/preprocess/coco
 code/mmdetection/data
 *.out
