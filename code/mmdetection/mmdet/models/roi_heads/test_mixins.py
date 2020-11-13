@@ -68,7 +68,7 @@ class BBoxTestMixin(object):
             scale_factor,
             rescale=rescale,
             cfg=rcnn_test_cfg)
-        return det_bboxes, det_labels
+        return det_bboxes, det_labels, bbox_results['cls_score'], bbox_results['bbox_pred']
 
     def aug_test_bboxes(self, feats, img_metas, proposal_list, rcnn_test_cfg):
         """Test det bboxes with test time augmentation."""

@@ -6,5 +6,7 @@ data/preprocess/public
 data/preprocess/public_aug
 data/preprocess/coco
 code/mmdetection/data
+code/mmdetection/logs
 *.out
 code/data/.ipynb_checkpoints/
+code/yolo

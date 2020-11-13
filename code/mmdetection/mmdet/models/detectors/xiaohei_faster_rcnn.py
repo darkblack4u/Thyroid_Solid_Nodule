@@ -94,53 +94,38 @@ class XiaoheiFasterRCNN(FasterRCNN):
         x = self.extract_feat(img)
 
         losses = dict()
-
-        # print(img.shape)
-
-        # if self.with_semantic:
-        semantic_pred, semantic_feat = self.semantic_head(x)
-        # print(semantic_feat.shape)
-        mask_targets = []
-        # device = semantic_pred.device
-        device = semantic_feat.device
-        # print(img.shape)
-        for gt_m in gt_masks:
-            # print(gt_m)
-            gt_m = gt_m.resize(out_shape = (semantic_pred.shape[2], semantic_pred.shape[3])).to_ndarray()
-            o = np.zeros((semantic_pred.shape[2], semantic_pred.shape[3]))
-            for a in gt_m[::]:
-                # print(a.shape)
-                o += a
-            gt_m = o[np.newaxis, :]
-            # print(gt_m.shape)
-            gt_m = torch.from_numpy(gt_m).float().to(device)
-            # print(gt_m.shape)
-            mask_targets.append(gt_m)
-        if len(mask_targets) > 0:
-            mask_targets = torch.cat(mask_targets)
-        # print(img_metas)
-        # print(semantic_pred.shape)                        
-
-        loss_seg = self.semantic_head.loss(semantic_pred, mask_targets)
-        losses['loss_semantic_seg'] = loss_seg
         attend_feat = []
-        if len(x) > 1:
-            for i, feat in enumerate(x):
-                if i != len(x) - 1:
-                    att_feat = self.pooling(semantic_feat, kernel_size=2**i, stride=2**i)
-                    # print(feat.shape)                        
-                    # print(att_feat.shape)
-                    attend_feat.append(feat + att_feat)
-                else:
-                    attend_feat.append(feat)
+        if self.with_semantic:
+            semantic_pred, semantic_feat = self.semantic_head(x)                  
+            if self.semantic_head.with_semantic_loss:
+                mask_targets = []
+                device = semantic_feat.device
+                for gt_m in gt_masks:
+                    gt_m = gt_m.resize(out_shape = (semantic_pred.shape[2], semantic_pred.shape[3])).to_ndarray()
+                    o = np.zeros((semantic_pred.shape[2], semantic_pred.shape[3]))
+                    for a in gt_m[::]:
+                        o += a
+                    gt_m = o[np.newaxis, :]
+                    gt_m = torch.from_numpy(gt_m).float().to(device)
+                    mask_targets.append(gt_m)
+                if len(mask_targets) > 0:
+                    labels = torch.cat([1 for res in sampling_results])
+                    mask_targets = torch.cat(mask_targets)
+                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, labels)
+                losses['loss_semantic_seg'] = loss_seg
+            if len(x) > 1:
+                for i, feat in enumerate(x):
+                    if i != len(x) - 1:
+                        att_feat = self.pooling(semantic_feat, kernel_size=2**i, stride=2**i)
+                        attend_feat.append(feat.mul(att_feat))
+                    else:
+                        attend_feat.append(feat)
+            else:
+                attend_feat.append(x.mul(self.pooling(semantic_feat, kernel_size=2, stride=2)))
+            attend_feat = tuple(attend_feat)
         else:
-            attend_feat.append(x + self.pooling(semantic_feat, kernel_size=2, stride=2))
-        # # losses.update(mask_losses)
-        # RPN forward and loss
-        # attend_feat = semantic_feat
-        attend_feat = tuple(attend_feat)
-        # else:
-        #     attend_feat = x
+            attend_feat = x
+
         if self.with_rpn:
             proposal_cfg = self.train_cfg.get('rpn_proposal',
                                               self.test_cfg.rpn)
@@ -169,29 +154,34 @@ class XiaoheiFasterRCNN(FasterRCNN):
 
         x = self.extract_feat(img)
         
-        semantic_pred, semantic_feat = self.semantic_head(x)
-
         attend_feat = []
-        if len(x) > 1:
-            for i, feat in enumerate(x):
-                if i != len(x) - 1:
-                    att_feat = self.pooling(semantic_feat, kernel_size=2**i, stride=2**i)
-                    # print(feat.shape)                        
-                    # print(att_feat.shape)
-                    attend_feat.append(feat + att_feat)
-                else:
-                    attend_feat.append(feat)
+        if self.with_semantic:
+            semantic_pred, semantic_feat = self.semantic_head(x)                  
+            if self.semantic_head.with_semantic_loss:
+                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets)
+                losses['loss_semantic_seg'] = loss_seg
+            if len(x) > 1:
+                for i, feat in enumerate(x):
+                    if i != len(x) - 1:
+                        att_feat = self.pooling(semantic_feat, kernel_size=2**i, stride=2**i)
+                        attend_feat.append(feat.mul(att_feat))
+                    else:
+                        attend_feat.append(feat)
+            else:
+                attend_feat.append(x.mul(self.pooling(semantic_feat, kernel_size=2, stride=2)))
+            attend_feat = tuple(attend_feat)
+            # segm_result = self.mask_head.simple_test_mask(semantic_pred, img_metas, rescale=rescale)
         else:
-            attend_feat.append(x + self.pooling(semantic_feat, kernel_size=2, stride=2))
-        # # losses.update(mask_losses)
-        # RPN forward and loss
-        # attend_feat = semantic_feat
-        attend_feat = tuple(attend_feat)
+            attend_feat = x
 
         if proposals is None:
             proposal_list = self.rpn_head.simple_test_rpn(attend_feat, img_metas)
         else:
             proposal_list = proposals
-
         return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale)
-############ return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x ############
+
+        # ### processInference-FeatureHeatMap ####
+        # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), x, att_feats, attend_feat
+
+        # ### processInference-BranchResult ####
+        # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), proposal_list

@@ -19,4 +19,4 @@ from .coco import CocoDataset
 @DATASETS.register_module()
 class ChenzhouDataset(CocoDataset):
 
-    CLASSES = ('outlier', 'nodule')
+    CLASSES = ('nodule', 'outlier')

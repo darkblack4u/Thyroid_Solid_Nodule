@@ -196,7 +196,12 @@ class TwoStageDetector(BaseDetector):
             proposal_list = proposals
 
         return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale)
-############ return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x ############
+        
+        # ### processInference-FeatureHeatMap ####  
+        # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), proposal_list
+        # ### processInference-FeatureHeatMap ####
+        # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x, x, x
+
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.
