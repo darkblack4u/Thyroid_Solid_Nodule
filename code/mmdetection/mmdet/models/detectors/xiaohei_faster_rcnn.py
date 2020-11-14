@@ -108,10 +108,12 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     gt_m = o[np.newaxis, :]
                     gt_m = torch.from_numpy(gt_m).float().to(device)
                     mask_targets.append(gt_m)
+                    # labels.append(1)
                 if len(mask_targets) > 0:
-                    labels = torch.cat([1 for res in sampling_results])
+                    # tensor = torch.ones((2,), dtype=torch.long)
+                    # labels = tensor.new_tensor(labels)
                     mask_targets = torch.cat(mask_targets)
-                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, labels)
+                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels)
                 losses['loss_semantic_seg'] = loss_seg
             if len(x) > 1:
                 for i, feat in enumerate(x):
@@ -157,9 +159,6 @@ class XiaoheiFasterRCNN(FasterRCNN):
         attend_feat = []
         if self.with_semantic:
             semantic_pred, semantic_feat = self.semantic_head(x)                  
-            if self.semantic_head.with_semantic_loss:
-                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets)
-                losses['loss_semantic_seg'] = loss_seg
             if len(x) > 1:
                 for i, feat in enumerate(x):
                     if i != len(x) - 1:
