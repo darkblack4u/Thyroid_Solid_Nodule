@@ -69,6 +69,9 @@ nohup python processXiaoheiRCNNPublic.py >> logs/xiaohei_faster_rcnn_r50_fpn_1x_
         - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202010191350: Xiaohei Chenzhou Loss比例1:1:1 Attention权重1 0.05
         - xiaohei_faster_rcnn_r50_fpn_1x_public_202010020208: Xiaohei Public Loss比例1:1:1 Attention权重1 伪Mask
         - xiaohei_faster_rcnn_r50_fpn_1x_public_202010040906: Xiaohei Public Loss比例1:1:1 Attention权重1 GTMask
+    - new_xiaohei
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011140852: Xiaohei Chenzhou Loss比例1:1:1 Attention权重1 0.05
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_withoutLoss_202011130800: Xiaohei Chenzhou Loss比例1:1:1 Attention权重1 0.05 withoutLoss
     - faster_rcnn
         - faster_rcnn_r50_fpn_1x_chenzhou_202009291508: FasterRCNN Chenzhou结果
         - faster_rcnn_r50_fpn_1x_public_202010020155: FasterRCNN Public结果
