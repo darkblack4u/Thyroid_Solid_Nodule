@@ -1,6 +1,7 @@
 from mmcv.cnn import ConvModule
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 from mmdet.models.builder import HEADS
 from .fcn_mask_head import FCNMaskHead
 from mmdet.core import auto_fp16, force_fp32
@@ -20,7 +21,6 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
         self.with_conv_res = with_conv_res
         self.with_semantic_loss = with_semantic_loss
         self.ignore_label = ignore_label
-        self.criterion = nn.CrossEntropyLoss(ignore_index=ignore_label)
         self.loss_weight = loss_weight
         self.attention_weight = attention_weight
 
