@@ -258,7 +258,6 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             # ### processInference-Proposal ####  
             # return bbox_results, cls_score, bbox_pred
             return bbox_results
-
         else:
             segm_results = self.simple_test_mask(
                 x, img_metas, det_bboxes, det_labels, rescale=rescale)

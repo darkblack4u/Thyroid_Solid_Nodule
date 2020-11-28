@@ -70,23 +70,37 @@ nohup python processXiaoheiRCNNPublic.py >> logs/xiaohei_faster_rcnn_r50_fpn_1x_
         - xiaohei_faster_rcnn_r50_fpn_1x_public_202010020208: Xiaohei Public Loss比例1:1:1 Attention权重1 伪Mask
         - xiaohei_faster_rcnn_r50_fpn_1x_public_202010040906: Xiaohei Public Loss比例1:1:1 Attention权重1 GTMask
     - new_xiaohei
-        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011140852: Xiaohei Chenzhou Loss比例1:1:1 Attention权重1 0.05
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011141101: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.01
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011150357: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.02
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011160311: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.05
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011170234: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.001
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011180155: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.005
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_202011190119: Xiaohei Chenzhou Loss比例1:1 Attention权重1 0.002
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_lw_12_202011170846: Xiaohei Chenzhou Loss比例1:2 Attention权重1 0.01
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_lw_13_202011172300: Xiaohei Chenzhou Loss比例1:3 Attention权重1 0.01
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_lw_21_202011181311: Xiaohei Chenzhou Loss比例2:1 Attention权重1 0.01
+        - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_lw_31_202011190316: Xiaohei Chenzhou Loss比例3:1 Attention权重1 0.01
         - xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_withoutLoss_202011130800: Xiaohei Chenzhou Loss比例1:1:1 Attention权重1 0.05 withoutLoss
+        - xiaohei_faster_rcnn_r50_fpn_1x_public_dir_images2_202011210314: Xiaohei Public Loss比例1:1:1 Attention权重1 0.01 GTMask
+        - xiaohei_faster_rcnn_r50_fpn_1x_public_dir_pseudo_images2_202011200134: Xiaohei Public Loss比例1:1:1 Attention权重1 0.01 伪Mask
     - faster_rcnn
-        - faster_rcnn_r50_fpn_1x_chenzhou_202009291508: FasterRCNN Chenzhou结果
+        - faster_rcnn_r50_fpn_1x_chenzhou_202011260631: FasterRCNN Chenzhou结果
         - faster_rcnn_r50_fpn_1x_public_202010020155: FasterRCNN Public结果
     - ms_rcnn
-        - ms_rcnn_r50_fpn_1x_chenzhou_202010071352: MSRCNN Chenzhou结果
-        - ms_rcnn_r50_fpn_1x_public_202010090033: MSRCNN Public结果
+        - ms_rcnn_r50_fpn_1x_chenzhou_202011251546: MSRCNN Chenzhou结果
+        - MSRCNN Public结果 从来没有成功过
     - mask_rcnn
+        - mask_rcnn_r50_fpn_1x_chenzhou_2020112509254: MaskRCNN Chenzhou结果
         - mask_rcnn_r50_fpn_1x_public_202010010624: MaskRCNN Public结果
     - cornernet
         - cornernet_hourglass104_mstest_8x6_210e_chenzhou_202010111214: Cornernet Chenzhou结果
         - cornernet_hourglass104_mstest_8x6_210e_public_202010130925: Cornernet Public结果
-    - YOLO
+    - YOLO 从来没有成功过
         - yolov3_d53_mstrain-608_273e_chenzhou_202010151003: YOLO Chenzhou结果
         - yolov3_d53_mstrain-608_273e_public_202010151003: YOLO Public结果
-
+    - yolact
+        - yolact_r50_1x8_chenzhou_202010160301: yolact Chenzhou结果
+        - yolact_r50_1x8_public_202010160701: yolact Public结果
 ```
  mkdir -p demo/0 demo/1 demo/2 demo/3 demo/4
  cp 0/*A1B1C1D2E1_48THY1820180723105605185* demo/0/

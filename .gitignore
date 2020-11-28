@@ -10,3 +10,4 @@ code/mmdetection/logs
 *.out
 code/data/.ipynb_checkpoints/
 code/yolo
+data/preprocess/

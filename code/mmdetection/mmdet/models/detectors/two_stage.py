@@ -196,11 +196,11 @@ class TwoStageDetector(BaseDetector):
             proposal_list = proposals
 
         return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale)
-        
+
         # ### processInference-FeatureHeatMap ####  
         # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), proposal_list
-        # ### processInference-FeatureHeatMap ####
-        # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x, x, x
+        ### processInference-FeatureHeatMap ####
+        # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x
 
 
     def aug_test(self, imgs, img_metas, rescale=False):

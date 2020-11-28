@@ -157,6 +157,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
         x = self.extract_feat(img)
         
         attend_feat = []
+        att_feats = []
         if self.with_semantic:
             semantic_pred, semantic_feat = self.semantic_head(x)                  
             if len(x) > 1:
@@ -164,23 +165,27 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     if i != len(x) - 1:
                         att_feat = self.pooling(semantic_feat, kernel_size=2**i, stride=2**i)
                         attend_feat.append(feat.mul(att_feat))
+                        att_feats.append(att_feat)
                     else:
                         attend_feat.append(feat)
             else:
                 attend_feat.append(x.mul(self.pooling(semantic_feat, kernel_size=2, stride=2)))
             attend_feat = tuple(attend_feat)
-            # segm_result = self.mask_head.simple_test_mask(semantic_pred, img_metas, rescale=rescale)
+            att_feats = tuple(att_feats)
+            # segm_result = self.semantic_head.simple_test_mask(semantic_pred, img_metas, rescale=rescale)
         else:
             attend_feat = x
+            segm_result = None
 
         if proposals is None:
             proposal_list = self.rpn_head.simple_test_rpn(attend_feat, img_metas)
         else:
             proposal_list = proposals
+        ### processInference-Proposal ####  
         return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale)
 
         # ### processInference-FeatureHeatMap ####
         # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), x, att_feats, attend_feat
 
-        # ### processInference-BranchResult ####
-        # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), proposal_list
+        # ## processInference-BranchResult ####
+        # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), segm_result

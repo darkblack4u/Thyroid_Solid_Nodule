@@ -116,11 +116,17 @@ def inference_detector(model, img):
     #     result, x, y, z = model(return_loss=False, rescale=True, **data)
     # return result, x, y, z
     
-    ### processInference-BranchResult ####
-    ### forward the model
+    ## processInference-BranchResult ####
+    ## forward the model
     # with torch.no_grad():
-    #     result, x = model(return_loss=False, rescale=True, **data)
-    # return result, x
+    #     result = model(return_loss=False, rescale=True, **data)
+    # return result
+
+    # ### processInference-Proposal ####
+    # ### forward the model
+    # with torch.no_grad():
+    #     result = model(return_loss=False, rescale=True, **data)
+    # return result
 
     with torch.no_grad(): 
         result = model(return_loss=False, rescale=True, **data) 
