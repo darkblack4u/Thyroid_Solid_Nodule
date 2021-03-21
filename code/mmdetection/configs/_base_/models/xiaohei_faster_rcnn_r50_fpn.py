@@ -1,6 +1,7 @@
 model = dict(
     type='XiaoheiFasterRCNN',
     pretrained='torchvision://resnet50',
+    inference=False,
     backbone=dict(
         type='ResNet',
         depth=50,  ####### Depth of resnet, from {18, 34, 50, 101, 152}

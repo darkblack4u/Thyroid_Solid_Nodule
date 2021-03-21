@@ -7,7 +7,7 @@ from mmcv.runner import (HOOKS, DistSamplerSeedHook, EpochBasedRunner,
                          OptimizerHook, build_optimizer)
 from mmcv.utils import build_from_cfg
 
-from mmdet.core import DistEvalHook, EvalHook, Fp16OptimizerHook
+from mmdet.core import DistEvalHook, EvalHook, Fp16OptimizerHook, PostProcessHook
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.utils import get_root_logger
 
@@ -121,6 +121,11 @@ def train_detector(model,
         eval_cfg = cfg.get('evaluation', {})
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
+
+##############################################
+    post_process_hook = PostProcessHook
+    runner.register_hook(post_process_hook(data_loaders[0], cfg.work_dir, 1), priority='NORMAL')
+##############################################
 
     # user-defined hooks
     if cfg.get('custom_hooks', None):

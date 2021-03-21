@@ -58,6 +58,15 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
         return loss_semantic_seg * self.loss_weight
 
 
+    def postprocess(self, semantic_pred, bboxes):
+        ori_data = semantic_pred[0][0]
+        h = ori_data.shape[0]
+        w = ori_data.shape[1]
+        mask_data = np.zeros((h,w))
+        for i in range(len(bboxes)):
+            roi_image = ori_data[int(min_y): int(min_y) + int(height), int(min_x): int(min_x) + int(width)]
+
+
     def simple_test_mask(self,
                          x,
                          img_metas,

@@ -119,3 +119,56 @@ nohup python processXiaoheiRCNNPublic.py >> logs/xiaohei_faster_rcnn_r50_fpn_1x_
  cp 3/*A4B2C3D3E4_106THY4620180823092452358T* demo/3/
  cp 4/*A4B2C3D3E4_106THY4620180823092452358T* demo/4/
 ```
+
+
+### 代码
+
+#### mmdet/models/detectors/xiaohei_faster_rcnn.py
+
+```
+- 继承自FasterRCNN/TwoStageDetector，主要是网络结构的调整
+    - 增加了semantic_head参数
+    - 重写了init_weights/forward_train/simple_test
+    - 添加了with_semantic
+- forward_train方法
+    - 这个方法解释训练过程
+    - 参数未变
+    - 添加了自己的网络
+    - 添加了自己网络头的loss，losses['loss_semantic_seg'] = loss_seg，有一个计算自己mask_targets的过程
+        - 主要是将gt_m变换成了预测semantic_pred的大小
+        - ？？？不知道能不能直接用code/mmdetection/mmdet/core/mask/mask_target.py里面的方法
+- simple_test方法
+    - 这个方法解释测试输出
+    - 参数未变
+    - 添加了自己的网络
+    - 输出方式未变
+```
+#### mmdet/models/roi_heads/mask_heads/xiaohei_fcn_mask_head.py
+```
+- 实验中用的XiaoheiFCNMaskHead头，具体实现了branch分支的代码，继承自FCNMaskHead
+    - 基本都重写了
+- forward方法
+    - 前向传播
+    - 4层卷积网络
+    - 一个上采样
+    - 返回输出的预测的mask_pred和输出的attention_map
+- loss方法
+    - 完全按照FCN_Mask_head写的，满足mask_cross_entropy
+```
+
+
+#### 完整体代码与测试 2021
+
+- 测试脚本
+
+```
+/root/workspace/Thyroid_Solid_Nodule/code/mmdetection/processXiaoheiRCNNTest2021.py
+
+- 
+```
+
+- 执行
+
+```
+nohup python processXiaoheiRCNNTest2021.py >> logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_$(date +%Y%m%d%H%M).log &
+```
