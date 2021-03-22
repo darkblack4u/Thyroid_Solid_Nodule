@@ -147,7 +147,7 @@ if __name__ == '__main__':
         cfg.gpu_ids = [0]
         cfg.seed = 0
         cfg.total_epochs = 5
-        cfg.log_config.interval = 100
+        cfg.log_config.interval = 1000
         print("cfg.work_dir:" + cfg.work_dir)
         annotation_train = work_dir + '/annotation/train/'
         annotation_val = work_dir + '/annotation/val/'
@@ -162,7 +162,7 @@ if __name__ == '__main__':
         #     print("cfg.data.val.ann_file:" + cfg.data.val.ann_file)
         #     print("cfg.load_from:" + cfg.load_from)
 
-        cfg.load_from = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103210836/latest.pth'
+        # cfg.load_from = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103210836/latest.pth'
         # Build dataset
         datasets = [build_dataset(cfg.data.train)]
         
