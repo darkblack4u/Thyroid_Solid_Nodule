@@ -9,17 +9,18 @@ import torch
 from skimage import measure 
 from mmdet.datasets.pipelines import Compose
 from mmcv.parallel import collate, scatter
-from mmdet.datasets import build_dataset
+from mmdet.datasets import build_dataset, build_dataloader
 from shapely.geometry import Polygon
 
 
 @HOOKS.register_module()
 class PostProcessHook(Hook):
 
-    def __init__(self, branchout_dir, cfg_data, interval=1):
+    def __init__(self, cfg, interval=1):
+        self.cfg = cfg
+        self.branchout_dir = self.cfg.work_dir
+        self.cfg_data = self.cfg.data
         self.interval = interval
-        self.branchout_dir = branchout_dir
-        self.cfg_data = cfg_data
 
     def after_train_epoch(self, runner):
         with open(runner.data_loader.dataset.ann_file,'r') as load_f:
@@ -93,7 +94,13 @@ class PostProcessHook(Hook):
             # print(runner.data_loader.dataset.ann_file)#### ToDo：读取新的注释
             self.cfg_data.train.ann_file = self.branchout_dir + '/' + str(runner.epoch) + '.json'
             next_dataset = build_dataset(self.cfg_data.train)
-            runner.data_loader.dataset = next_dataset
+            runner.data_loader = build_dataloader(
+                next_dataset, 
+                self.cfg_data.samples_per_gpu, 
+                self.cfg_data.workers_per_gpu, 
+                len(self.cfg.gpu_ids), 
+                dist=False, 
+                seed=self.cfg.seed)
             return
         # 读取json文件
        
