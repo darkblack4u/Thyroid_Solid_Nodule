@@ -98,6 +98,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
             proposals : override rpn proposals with custom proposals. Use when
                 `with_rpn` is False.
         """
+        # print('len(img_metas): ' + str(len(img_metas)))
         x = self.extract_feat(img)
 
         losses = dict()
@@ -120,8 +121,9 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     # tensor = torch.ones((2,), dtype=torch.long)
                     # labels = tensor.new_tensor(labels)
                     mask_targets = torch.cat(mask_targets)
-                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels)
-                losses['loss_semantic_seg'] = loss_seg
+                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels, gt_bboxes, img_metas)
+                losses['loss_semantic_seg'] = loss_seg[0]
+                losses['loss_semantic_box'] = loss_seg[1]
             if len(x) > 1:
                 for i, feat in enumerate(x):
                     if i != len(x) - 1:

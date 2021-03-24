@@ -6,6 +6,9 @@ from mmdet.models.builder import HEADS
 from .fcn_mask_head import FCNMaskHead
 from mmdet.core import auto_fp16, force_fp32
 import numpy as np
+from skimage import measure 
+from shapely.geometry import Polygon
+from mmdet.models.builder import build_loss
 
 BYTES_PER_FLOAT = 4
 # TODO: This memory limit may be too much or too little. It would be better to
@@ -21,6 +24,7 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
                 ignore_label=255,
                 loss_weight=1,
                 attention_weight=1,
+                loss_bbox=dict(type='GIoULoss', loss_weight=1.0),
                 *args, **kwargs):
         super(XiaoheiFCNMaskHead, self).__init__(*args, **kwargs)
         self.with_conv_res = with_conv_res
@@ -28,6 +32,7 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
         self.ignore_label = ignore_label
         self.loss_weight = loss_weight
         self.attention_weight = attention_weight
+        self.loss_bbox = build_loss(loss_bbox)
 
 
     def init_weights(self):
@@ -46,7 +51,8 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
         return mask_pred, res_feat * self.attention_weight
 
     @force_fp32(apply_to=('mask_pred', ))
-    def loss(self, semantic_pred, mask_targets, labels):
+    def loss(self, semantic_pred, mask_targets, labels, gt_bboxes, img_metas):
+        assert len(semantic_pred) == len(mask_targets) == len(gt_bboxes)
         if semantic_pred.size(0) == 0:
             loss_semantic_seg = semantic_pred.sum() * 0
         else:
@@ -55,16 +61,55 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
                                            torch.zeros_like(labels))
             else:
                 loss_semantic_seg = self.loss_mask(semantic_pred, mask_targets, labels)
-        return loss_semantic_seg * self.loss_weight
+        segm_result = self.simple_test_mask(semantic_pred, img_metas, rescale=True)
+        loss_bbox = 0
+        for i, pred_feature in enumerate(segm_result):
+            # print(pred_feature)
+            img_np=np.where(pred_feature[0], 255, 0).astype(np.uint8)
+            bbox_preds = []
+            for gt_bbox in gt_bboxes[i].data.cpu().numpy():
+                min_x, min_y, width, height = gt_bbox
+                roi_image = img_np[int(min_y): int(min_y) + int(height), int(min_x): int(min_x) + int(width)]
+                labeled_img, num = measure.label(roi_image, connectivity =2, background=0, return_num=True) 
+                max_label, max_num = 0, 0
+                mask_image_tmp = np.zeros(img_np.shape)
+                for j in range(1, num+1): # 这里从1开始，防止将背景设置为最大连通域
+                    if np.sum(labeled_img == j) > max_num:
+                        max_num = np.sum(labeled_img == j)
+                        max_label = j
+                roi_image = np.where(labeled_img == max_label, 255, 0)
+                mask_image_tmp[int(min_y): int(min_y) + int(height), int(min_x): int(min_x) + int(width)] = roi_image
+                bbox_pred = [int(0), int(0), img_np.shape[1], img_np.shape[0]]
+                try:
+                    polygons = create_sub_mask_annotation(mask_image_tmp)
+                    if len(polygons) > 0 and int(polygons[0].area) > 100:
+                        polygon_min_x, polygon_min_y, polygon_max_x, polygon_max_y = polygons[0].bounds
+                        polygon_width = polygon_max_x - polygon_min_x
+                        polygon_height = polygon_max_y - polygon_min_y
+                        bbox_pred = [int(polygon_min_x), int(polygon_min_y), int(polygon_width), int(polygon_height)]
+                except:
+                    bbox_pred = [int(0), int(0), img_np.shape[1], img_np.shape[0]]
+                    print(':ERROR#')
+                bbox_preds.append(bbox_pred)
+            bbox_pred_tensors = torch.tensor(bbox_preds, dtype=torch.float, device=gt_bboxes[i].device)
+            loss_bbox = loss_bbox + self.loss_bbox(
+                bbox_pred_tensors,
+                gt_bboxes[i])
+            print(str(loss_bbox))
+        
+        return loss_semantic_seg * self.loss_weight, loss_bbox
 
+# FeatureAlign
+# pos_bbox_preds = flatten_bbox_preds[pos_inds]
+#             pos_bbox_targets = flatten_bbox_targets[pos_inds]
+#             pos_weights = pos_bbox_targets.new_zeros(
+#                 pos_bbox_targets.size()) + 1.0
+#             loss_bbox = self.loss_bbox(
+#                 pos_bbox_preds,
+#                 pos_bbox_targets,
+#                 pos_weights,
+#                 avg_factor=num_pos)
 
-    def postprocess(self, semantic_pred, bboxes):
-        ori_data = semantic_pred[0][0]
-        h = ori_data.shape[0]
-        w = ori_data.shape[1]
-        mask_data = np.zeros((h,w))
-        for i in range(len(bboxes)):
-            roi_image = ori_data[int(min_y): int(min_y) + int(height), int(min_x): int(min_x) + int(width)]
 
 
     def simple_test_mask(self,
@@ -249,3 +294,25 @@ def _do_paste_mask(masks, boxes, img_h, img_w, skip_empty=True):
         return img_masks[:, 0], (slice(y0_int, y1_int), slice(x0_int, x1_int))
     else:
         return img_masks[:, 0], ()
+
+def create_sub_mask_annotation(sub_mask):
+# Find contours (boundary lines) around each sub-mask
+# Note: there could be multiple contours if the object
+# is partially occluded. (E.g. an elephant behind a tree)
+    contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+    polygons = []
+    j = 0
+    for contour in contours:
+        # Flip from (row, col) representation to (x, y)
+        # and subtract the padding pixel
+        for i in range(len(contour)):
+            row, col = contour[i]
+            contour[i] = (col - 1, row - 1)
+        # Make a polygon and simplify it
+        poly = Polygon(contour)
+        poly = poly.simplify(1.0, preserve_topology=False)
+        if(poly.is_empty):
+            # Go to next iteration, dont save empty values in list
+            continue
+        polygons.append(poly)
+    return polygons

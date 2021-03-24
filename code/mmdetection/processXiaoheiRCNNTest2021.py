@@ -146,7 +146,7 @@ if __name__ == '__main__':
         cfg.work_dir = work_dir
         cfg.gpu_ids = [0]
         cfg.seed = 0
-        cfg.total_epochs = 5
+        cfg.total_epochs = 50
         cfg.log_config.interval = 1000
         print("cfg.work_dir:" + cfg.work_dir)
         annotation_train = work_dir + '/annotation/train/'

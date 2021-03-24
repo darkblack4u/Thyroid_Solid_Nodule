@@ -1,15 +1,13 @@
 import mmcv
 from mmcv.runner import HOOKS, Hook
-from mmdet.core.utils.misc import tensor2imgs
+from mmcv.parallel import scatter
+from mmdet.datasets import build_dataset, build_dataloader
 import os.path as osp
 import cv2
 import json
 import numpy as np
 import torch
 from skimage import measure 
-from mmdet.datasets.pipelines import Compose
-from mmcv.parallel import collate, scatter
-from mmdet.datasets import build_dataset, build_dataloader
 from shapely.geometry import Polygon
 
 
@@ -48,14 +46,14 @@ class PostProcessHook(Hook):
 
                 img_name = img_meta['ori_filename']
                 for per_image in ann_images:
-                    if per_image['file_name'] is img_name:
+                    if per_image['file_name'] == img_name:
                         per_image_id = per_image['id']
                         per_image_file_name = per_image['file_name']
                         mask_image = np.zeros(img_np.shape)
                         for per_annotation in ann_annotations:
                             if per_annotation['image_id'] == per_image_id:
-                                if per_image_file_name == 'A1B1C1D1E1_70THY2620180726100359152_A1B1C1D1E1_70THY2620180726100359152T_a8fe2331-3d3d-4c72-b2f6-7ef38e4f6b81.jpg':
-                                    print(str(runner.epoch) + ': ' + per_annotation['segmentation'])
+                                if per_image_file_name == 'A4B2C4D3E4_17612091620180905THY12820180905161037546_A4B2C4D3E4_17612091620180905THY12820180905161037546V_b012dc3c-ff1d-4776-a710-32e357c7c21e.jpg':
+                                    print(str(runner.epoch) + ': ' + str(per_annotation['segmentation']))
                                 mask_image_tmp = np.zeros(img_np.shape)
                                 per_annotation_bbox = per_annotation['bbox']
                                 min_x, min_y, width, height = per_annotation_bbox
@@ -87,6 +85,8 @@ class PostProcessHook(Hook):
             json.dump(load_dict, outfile)
 
     def before_train_epoch(self, runner):
+        # for i, data in enumerate(runner.data_loader):
+        #     print(data)
         if runner.epoch == 0:
             return
         else:

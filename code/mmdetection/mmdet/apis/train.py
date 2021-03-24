@@ -124,7 +124,7 @@ def train_detector(model,
 
 ##############################################
     post_process_hook = PostProcessHook
-    runner.register_hook(post_process_hook(cfg, 1), priority='NORMAL')
+    runner.register_hook(post_process_hook(cfg, 5), priority='NORMAL')
 ##############################################
 
     # user-defined hooks

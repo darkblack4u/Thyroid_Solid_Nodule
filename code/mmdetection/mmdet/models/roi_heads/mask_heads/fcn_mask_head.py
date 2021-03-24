@@ -95,11 +95,11 @@ class FCNMaskHead(nn.Module):
                 align_corners=align_corners)
             self.upsample = build_upsample_layer(upsample_cfg_)
 
-        out_channels = 1 if self.class_agnostic else self.num_classes
+        self.out_channels = 1 if self.class_agnostic else self.num_classes
         logits_in_channel = (
             self.conv_out_channels
             if self.upsample_method == 'deconv' else upsample_in_channels)
-        self.conv_logits = Conv2d(logits_in_channel, out_channels, 1)
+        self.conv_logits = Conv2d(logits_in_channel, self.out_channels, 1)
         self.relu = nn.ReLU(inplace=True)
         self.debug_imgs = None
 
