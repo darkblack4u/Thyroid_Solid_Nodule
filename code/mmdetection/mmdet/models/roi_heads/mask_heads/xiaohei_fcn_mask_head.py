@@ -95,7 +95,7 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
             loss_bbox = loss_bbox + self.loss_bbox(
                 bbox_pred_tensors,
                 gt_bboxes[i])
-            print(str(loss_bbox))
+            # print(str(loss_bbox))
         
         return loss_semantic_seg * self.loss_weight, loss_bbox
 

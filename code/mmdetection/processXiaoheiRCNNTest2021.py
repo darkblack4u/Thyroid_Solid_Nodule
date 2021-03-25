@@ -136,72 +136,58 @@ if __name__ == '__main__':
     # work_dir = '/root/workspace/Thyroid_Solid_Nodule/code/mmdetection/logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_20210317/'
 
     work_dir = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_' + time.strftime("%Y%m%d%H%M", time.localtime()) + '/'
-    # for epoch_num in range(0, 25):
-    epoch_num = int(sys.argv[1])
-    if epoch_num >= 0:
-        print('###################epoch#epoch##########################')
-        print(str(epoch_num))
-        cfg = Config.fromfile('./configs/faster_rcnn/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou.py')
-        # cfg.work_dir = work_dir + str(epoch_num) + '/'
-        cfg.work_dir = work_dir
-        cfg.gpu_ids = [0]
-        cfg.seed = 0
-        cfg.total_epochs = 50
-        cfg.log_config.interval = 1000
-        print("cfg.work_dir:" + cfg.work_dir)
-        annotation_train = work_dir + '/annotation/train/'
-        annotation_val = work_dir + '/annotation/val/'
-        print("annotation_train:" + annotation_train)
-        print("annotation_val:" + annotation_val)
+    cfg = Config.fromfile('./configs/faster_rcnn/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou.py')
+    # cfg.work_dir = work_dir + str(epoch_num) + '/'
+    cfg.work_dir = work_dir
+    cfg.gpu_ids = [0]
+    cfg.seed = 0
+    cfg.total_epochs = 50
+    cfg.log_config.interval = 1000
+    print("cfg.work_dir:" + cfg.work_dir)
+    annotation_train = work_dir + '/annotation/train/'
+    annotation_val = work_dir + '/annotation/val/'
+    print("annotation_train:" + annotation_train)
+    print("annotation_val:" + annotation_val)
 
-        # if epoch_num > 0:
-        #     cfg.data.train.ann_file = annotation_train + str(epoch_num) + '.json'
-        #     cfg.data.val.ann_file = annotation_val + str(epoch_num) + '.json'
-        #     # cfg.resume_from = work_dir + str(epoch_num-1) + '/latest.pth'
-        #     cfg.load_from = work_dir + str(epoch_num-1) + '/latest.pth'
-        #     print("cfg.data.val.ann_file:" + cfg.data.val.ann_file)
-        #     print("cfg.load_from:" + cfg.load_from)
+    # cfg.load_from = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103210836/latest.pth'
+    # Build dataset
+    datasets = [build_dataset(cfg.data.train)]
+    
+    # Build the detector
+    model = build_detector(
+        cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
+    # Add an attribute for visualization convenience
+    model.CLASSES = datasets[0].CLASSES
+    
+    # Create work_dir
+    mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
 
-        # cfg.load_from = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103210836/latest.pth'
-        # Build dataset
-        datasets = [build_dataset(cfg.data.train)]
-        
-        # Build the detector
-        model = build_detector(
-            cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
-        # Add an attribute for visualization convenience
-        model.CLASSES = datasets[0].CLASSES
-        
-        # Create work_dir
-        mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
+    train_detector(model, datasets, cfg, distributed=False, validate=True)
+    
+    # # 推理部分
+    # branchout_train = work_dir + '/branchout/train/' + str(epoch_num) + '/'
+    # branchout_val = work_dir + '/branchout/val/' + str(epoch_num) + '/'
 
-        train_detector(model, datasets, cfg, distributed=False, validate=True)
-        
-        # # 推理部分
-        # branchout_train = work_dir + '/branchout/train/' + str(epoch_num) + '/'
-        # branchout_val = work_dir + '/branchout/val/' + str(epoch_num) + '/'
+    # print("branchout_train:" + branchout_train)
+    # print("branchout_val:" + branchout_val)
 
-        # print("branchout_train:" + branchout_train)
-        # print("branchout_val:" + branchout_val)
+    # mmcv.mkdir_or_exist(osp.abspath(annotation_train + str(epoch_num) + '/'))
+    # mmcv.mkdir_or_exist(osp.abspath(annotation_val + str(epoch_num) + '/'))
+    # mmcv.mkdir_or_exist(osp.abspath(branchout_train))
+    # mmcv.mkdir_or_exist(osp.abspath(branchout_val))
 
-        # mmcv.mkdir_or_exist(osp.abspath(annotation_train + str(epoch_num) + '/'))
-        # mmcv.mkdir_or_exist(osp.abspath(annotation_val + str(epoch_num) + '/'))
-        # mmcv.mkdir_or_exist(osp.abspath(branchout_train))
-        # mmcv.mkdir_or_exist(osp.abspath(branchout_val))
+    # cfg.model.inference = True
 
-        # cfg.model.inference = True
+    # checkpoint = cfg.work_dir + 'latest.pth'
+    # inference_model = init_detector(cfg, checkpoint, device='cuda:0')
+    # inference_model.CLASSES = datasets[0].CLASSES
 
-        # checkpoint = cfg.work_dir + 'latest.pth'
-        # inference_model = init_detector(cfg, checkpoint, device='cuda:0')
-        # inference_model.CLASSES = datasets[0].CLASSES
+    # postprocess(inference_model, cfg.data.train.img_prefix, branchout_train)
+    # postprocess(inference_model, cfg.data.val.img_prefix, branchout_val)
 
-        # postprocess(inference_model, cfg.data.train.img_prefix, branchout_train)
-        # postprocess(inference_model, cfg.data.val.img_prefix, branchout_val)
-
-        # rebuild_json(branchout_train, cfg.data.train.ann_file, annotation_train, str(epoch_num + 1))
-        
-        # rebuild_json(branchout_val, cfg.data.val.ann_file, annotation_val, str(epoch_num + 1))
-        print('###################epoch#epoch##########################')
+    # rebuild_json(branchout_train, cfg.data.train.ann_file, annotation_train, str(epoch_num + 1))
+    
+    # rebuild_json(branchout_val, cfg.data.val.ann_file, annotation_val, str(epoch_num + 1))
 
 
 
