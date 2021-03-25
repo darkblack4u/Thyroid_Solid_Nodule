@@ -79,16 +79,16 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
                         max_label = j
                 roi_image = np.where(labeled_img == max_label, 255, 0)
                 mask_image_tmp[int(min_y): int(min_y) + int(height), int(min_x): int(min_x) + int(width)] = roi_image
-                bbox_pred = [int(0), int(0), img_np.shape[1], img_np.shape[0]]
+                bbox_pred = [int(min_x), int(min_y), int(min_x + width / 2), int(min_y + height / 2)]
                 try:
                     polygons = create_sub_mask_annotation(mask_image_tmp)
                     if len(polygons) > 0 and int(polygons[0].area) > 100:
                         polygon_min_x, polygon_min_y, polygon_max_x, polygon_max_y = polygons[0].bounds
-                        polygon_width = polygon_max_x - polygon_min_x
-                        polygon_height = polygon_max_y - polygon_min_y
-                        bbox_pred = [int(polygon_min_x), int(polygon_min_y), int(polygon_width), int(polygon_height)]
+                        # polygon_width = polygon_max_x - polygon_min_x
+                        # polygon_height = polygon_max_y - polygon_min_y
+                        bbox_pred = [int(polygon_min_x), int(polygon_min_y), int(polygon_max_x), int(polygon_max_y)]
                 except:
-                    bbox_pred = [int(0), int(0), img_np.shape[1], img_np.shape[0]]
+                    bbox_pred = [int(min_x), int(min_y), int(min_x + width / 2), int(min_y + height / 2)]
                     print(':ERROR#')
                 bbox_preds.append(bbox_pred)
             bbox_pred_tensors = torch.tensor(bbox_preds, dtype=torch.float, device=gt_bboxes[i].device)

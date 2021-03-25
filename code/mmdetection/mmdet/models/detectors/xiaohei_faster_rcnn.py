@@ -122,8 +122,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     # labels = tensor.new_tensor(labels)
                     mask_targets = torch.cat(mask_targets)
                 loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels, gt_bboxes, img_metas)
-                losses['loss_semantic_seg'] = loss_seg[0]
-                losses['loss_semantic_box'] = loss_seg[1]
+                losses['loss_semantic_seg'], losses['loss_semantic_box'] = loss_seg
             if len(x) > 1:
                 for i, feat in enumerate(x):
                     if i != len(x) - 1:
