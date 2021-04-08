@@ -24,7 +24,7 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
                 ignore_label=255,
                 loss_weight=1,
                 attention_weight=1,
-                loss_bbox=dict(type='GIoULoss', loss_weight=1.0),
+                loss_bbox=dict(type='GIoULoss', loss_weight=1),
                 *args, **kwargs):
         super(XiaoheiFCNMaskHead, self).__init__(*args, **kwargs)
         self.with_conv_res = with_conv_res
