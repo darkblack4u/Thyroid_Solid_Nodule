@@ -1,4 +1,5 @@
 .vscode/
+data/
 data/origin/
 data/preprocess/chenzhou
 data/preprocess/chenzhou_aug
