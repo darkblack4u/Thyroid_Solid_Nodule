@@ -18,7 +18,8 @@ class XiaoheiFasterRCNN(FasterRCNN):
                  test_cfg,
                  neck=None,
                  semantic_head=None,
-                 pretrained=None):
+                 pretrained=None,
+                 inference=False):
         super(XiaoheiFasterRCNN, self).__init__(
             backbone=backbone,
             neck=neck,
@@ -27,6 +28,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
             pretrained=pretrained)
+        
         if semantic_head is not None:
             # update train and test cfg here for now
             # TODO: refactor assigner & sampler
@@ -35,6 +37,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
             # semantic_head.update(test_cfg=test_cfg.semantic_train_cfg)
             self.semantic_head = build_head(semantic_head)
         self.pooling = F.avg_pool2d
+        self.inference = inference
 
     def init_weights(self, pretrained=None):
         """Initialize the weights in head.
@@ -54,6 +57,11 @@ class XiaoheiFasterRCNN(FasterRCNN):
             return True
         else:
             return False
+
+    @property
+    def with_inference(self):
+        """bool: whether the detector has a RoI head"""
+        return self.inference
 
     def forward_train(self,
                       img,
@@ -90,7 +98,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
             proposals : override rpn proposals with custom proposals. Use when
                 `with_rpn` is False.
         """
-
+        # print('len(img_metas): ' + str(len(img_metas)))
         x = self.extract_feat(img)
 
         losses = dict()
@@ -105,7 +113,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     o = np.zeros((semantic_pred.shape[2], semantic_pred.shape[3]))
                     for a in gt_m[::]:
                         o += a
-                    gt_m = o[np.newaxis, :]
+                    gt_m = o[np.newaxis, :] ##### 增加一个维度
                     gt_m = torch.from_numpy(gt_m).float().to(device)
                     mask_targets.append(gt_m)
                     # labels.append(1)
@@ -113,8 +121,8 @@ class XiaoheiFasterRCNN(FasterRCNN):
                     # tensor = torch.ones((2,), dtype=torch.long)
                     # labels = tensor.new_tensor(labels)
                     mask_targets = torch.cat(mask_targets)
-                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels)
-                losses['loss_semantic_seg'] = loss_seg
+                loss_seg = self.semantic_head.loss(semantic_pred, mask_targets, gt_labels, gt_bboxes, img_metas)
+                losses['loss_semantic_seg'], losses['loss_semantic_box'] = loss_seg
             if len(x) > 1:
                 for i, feat in enumerate(x):
                     if i != len(x) - 1:
@@ -150,7 +158,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
 
         return losses
 
-    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+    def simple_test(self, img, img_metas, proposals=None, rescale=False, train_inference=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
 
@@ -172,7 +180,7 @@ class XiaoheiFasterRCNN(FasterRCNN):
                 attend_feat.append(x.mul(self.pooling(semantic_feat, kernel_size=2, stride=2)))
             attend_feat = tuple(attend_feat)
             att_feats = tuple(att_feats)
-            # segm_result = self.semantic_head.simple_test_mask(semantic_pred, img_metas, rescale=rescale)
+            segm_result = self.semantic_head.simple_test_mask(semantic_pred, img_metas, rescale=rescale)
         else:
             attend_feat = x
             segm_result = None
@@ -182,10 +190,13 @@ class XiaoheiFasterRCNN(FasterRCNN):
         else:
             proposal_list = proposals
         ### processInference-Proposal ####  
-        return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale)
+        if self.with_inference or train_inference:
+            return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), segm_result
+        else:
+            return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale)
 
         # ### processInference-FeatureHeatMap ####
         # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), x, att_feats, attend_feat
 
-        # ## processInference-BranchResult ####
+        # # processInference-BranchResult ####
         # return self.roi_head.simple_test(attend_feat, proposal_list, img_metas, rescale=rescale), segm_result
