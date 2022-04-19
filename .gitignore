@@ -12,3 +12,7 @@ code/mmdetection/logs
 code/data/.ipynb_checkpoints/
 code/yolo
 data/preprocess/
+code/mmdetection/tools/
+code/mmdetection-2.14.0
+results.pkl
+results1.pkl

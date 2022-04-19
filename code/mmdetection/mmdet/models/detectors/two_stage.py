@@ -199,7 +199,7 @@ class TwoStageDetector(BaseDetector):
 
         # ### processInference-FeatureHeatMap ####  
         # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), proposal_list
-        ### processInference-FeatureHeatMap ####
+        # ## processInference-FeatureHeatMap ####
         # return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale), x
 
 

@@ -110,8 +110,8 @@ def inference_detector(model, img):
         # just get the actual data from DataContainer
         data['img_metas'] = data['img_metas'][0].data
 
-    # ### processInference-FeatureHeatMap ####
-    # ### forward the model
+    # # ### processInference-FeatureHeatMap ####
+    # # ## forward the model
     # with torch.no_grad():
     #     result, x, y, z = model(return_loss=False, rescale=True, **data)
     # return result, x, y, z
@@ -122,15 +122,15 @@ def inference_detector(model, img):
     #     result = model(return_loss=False, rescale=True, **data)
     # return result
 
-    # ### processInference-Proposal ####
-    # ### forward the model
-    # with torch.no_grad():
-    #     result = model(return_loss=False, rescale=True, **data)
-    # return result
-
-    with torch.no_grad(): 
-        result = model(return_loss=False, rescale=True, **data) 
+    ### processInference-Proposal ####
+    ### forward the model
+    with torch.no_grad():
+        result = model(return_loss=False, rescale=True, **data)
     return result
+
+    # with torch.no_grad(): 
+    #     result = model(return_loss=False, rescale=True, **data) 
+    # return result
     
 
 

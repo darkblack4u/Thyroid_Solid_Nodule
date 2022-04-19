@@ -255,15 +255,15 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                                    self.bbox_head.num_classes)
 
         if not self.with_mask:
-            # ### processInference-Proposal ####  
-            # return bbox_results, cls_score, bbox_pred
-            return bbox_results
+            ### processInference-Proposal ####  
+            return bbox_results, cls_score, bbox_pred
+            # return bbox_results
         else:
             segm_results = self.simple_test_mask(
                 x, img_metas, det_bboxes, det_labels, rescale=rescale)
-            # ### processInference-Proposal ####  
-            # return bbox_results, segm_results, cls_score, bbox_pred
-            return bbox_results, segm_results
+            ### processInference-Proposal ####  
+            return bbox_results, segm_results, cls_score, bbox_pred
+            # return bbox_results, segm_results
 
 
     def aug_test(self, x, proposal_list, img_metas, rescale=False):

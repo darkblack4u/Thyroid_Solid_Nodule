@@ -195,13 +195,14 @@ class XiaoheiFCNMaskHead(FCNMaskHead):
             img_h,
             img_w,
             device=device,
-            dtype=torch.bool)
-            # dtype=torch.float)
+            # 2022 dtype=torch.bool)
+            dtype=torch.float)
 
         if not self.class_agnostic:
             mask_pred = mask_pred[range(N), labels][:, None]
             
-        threshold = 0.1
+        # 2022 threshold = 0.1
+        threshold = -1
         for inds in chunks:
             masks_chunk, spatial_inds = _do_paste_mask(
                 mask_pred[inds],

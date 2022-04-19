@@ -13,15 +13,17 @@ import json
 from pylab import *
 from skimage import measure 
 from shapely.geometry import Polygon, MultiPolygon
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-
+epo = '2'
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
 cfg = Config.fromfile('./configs/faster_rcnn/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou.py')
-cfg.work_dir = 'logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103210836/'
+cfg.work_dir = 'tools/paper/train/logs/xiaohei_faster_rcnn_r50_fpn_1x_chenzhou_Test2021_202103250741/'
 cfg.gpu_ids = range(0,2)
 cfg.model.inference = True
-checkpoint = cfg.work_dir + 'latest.pth'
+checkpoint = cfg.work_dir + 'epoch_' + epo + '.pth'
 model = init_detector(cfg, checkpoint, device='cuda:0')
 datasets = [build_dataset(cfg.data.train)]
 model.CLASSES = datasets[0].CLASSES
@@ -32,9 +34,18 @@ data_root = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/'
 def draw_features(x, savedir, savename):
     # print(savename)
     img = x
-    img = np.where(img, 255, 0)
-    img=img.astype(np.uint8)  #转成unit8
-    cv2.imwrite(savedir + '/' + savename,mmcv.bgr2rgb(img),[int(cv2.IMWRITE_JPEG_QUALITY),95])
+    # 2022 img = np.where(img, 255, 0)
+    img -= img.mean()
+    img /= img.std ()
+    img *=  64
+    img += 128
+    # img=img.astype(np.uint8)  #转成unit8
+    # img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    # cv2.imwrite(savedir + '/' + savename,mmcv.bgr2rgb(img),[int(cv2.IMWRITE_JPEG_QUALITY),95])
+    f, ax = plt.subplots(figsize = img.shape)
+    sns.heatmap(img, linewidths = 0.05, ax = ax, vmax=255, vmin=0, cmap='rainbow')
+    # sns.heatmap(img, linewidths = 0.05, ax = ax2, vmax=255, vmin=0, cmap='rainbow')
+    plt.savefig(savedir + '/' + savename)
 
 def postprocess(image_dir, output_dir):
     for root, dirs, files in os.walk(os.path.abspath(image_dir)):
@@ -140,14 +151,14 @@ def rebuild_json(image_dir, json_file, output_dir, output_json_file):
         json.dump(load_dict, outfile)
 
 if __name__ == '__main__':
-
+    
     # path = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/tests/'
     # path = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou/image/'
     # validations
-    result_path = cfg.work_dir + '/test2021s/result/'
+    result_path = cfg.work_dir + '/test2022s/result/' + epo + '/'
     if os.path.exists(result_path) == False:
         os.makedirs(result_path)
-    annotation_path = cfg.work_dir + '/test2021s/annotation/'
+    annotation_path = cfg.work_dir + '/test2022s/annotation/' + epo + '/'
     if os.path.exists(annotation_path) == False:
         os.makedirs(annotation_path)
     image_path = '/root/workspace/Thyroid_Solid_Nodule/data/preprocess/chenzhou_aug/tests/'
