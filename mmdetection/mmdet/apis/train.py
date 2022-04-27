@@ -122,7 +122,7 @@ def train_detector(model,
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
 
-    # xiaohei add postprocess hook
+    # xiaohei add postprocess hook 
     post_process_hook = PostProcessHook
     runner.register_hook(post_process_hook(cfg, 5), priority='NORMAL')
 
