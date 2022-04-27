@@ -1,12 +1,4 @@
 .vscode/
 mmdetection/process*
-mmdetection/go.sh
 mmdetection/INFO
 mmdetection/LOG.md
-mmdetection/configs/_base_/datasets/chenzhou_detection.py
-mmdetection/configs/_base_/datasets/chenzhou_instance.py
-mmdetection/configs/_base_/datasets/public_instance.py
-mmdetection/configs/_base_/models/xiaohei_faster_rcnn_r50_fpn.py
-*xiaohei*
-*chenzhou*
-*public*
