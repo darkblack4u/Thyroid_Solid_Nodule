@@ -8,3 +8,5 @@ __all__ = [
     'multiclass_nms', 'merge_aug_proposals', 'merge_aug_bboxes',
     'merge_aug_scores', 'merge_aug_masks', 'PostProcessHook'
 ]
+# xiaohei[add]: PostProcessHook file
+

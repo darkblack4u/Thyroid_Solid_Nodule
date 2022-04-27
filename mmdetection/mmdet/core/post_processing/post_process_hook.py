@@ -13,14 +13,16 @@ from shapely.geometry import Polygon
 
 @HOOKS.register_module()
 class PostProcessHook(Hook):
+    # xiaohei[add]: PostProcessHook file
 
     def __init__(self, cfg, interval=1):
         self.cfg = cfg
         self.branchout_dir = self.cfg.work_dir
         self.cfg_data = self.cfg.data
-        self.interval = interval
+        self.interval = interval  # xiaohei[add]: mask file output interval
 
     def after_train_epoch(self, runner):
+        # xiaohei[add]: write new ann_file 
         with open(runner.data_loader.dataset.ann_file,'r') as load_f:
             load_dict = json.load(load_f)
         ann_images = load_dict['images']
@@ -52,8 +54,8 @@ class PostProcessHook(Hook):
                         mask_image = np.zeros(img_np.shape)
                         for per_annotation in ann_annotations:
                             if per_annotation['image_id'] == per_image_id:
-                                if per_image_file_name == 'A4B2C4D3E4_17612091620180905THY12820180905161037546_A4B2C4D3E4_17612091620180905THY12820180905161037546V_b012dc3c-ff1d-4776-a710-32e357c7c21e.jpg':
-                                    print(str(runner.epoch) + ': ' + str(per_annotation['segmentation']))
+                                # if per_image_file_name == 'A4B2C4D3E4_17612091620180905THY12820180905161037546_A4B2C4D3E4_17612091620180905THY12820180905161037546V_b012dc3c-ff1d-4776-a710-32e357c7c21e.jpg':
+                                #     print(str(runner.epoch) + ': ' + str(per_annotation['segmentation']))
                                 mask_image_tmp = np.zeros(img_np.shape)
                                 per_annotation_bbox = per_annotation['bbox']
                                 min_x, min_y, width, height = per_annotation_bbox
@@ -79,19 +81,16 @@ class PostProcessHook(Hook):
                                 per_annotation['segmentation'] = [segmentation]
             if i % 1000 == 0:
                 prog_bar.update(1000 * len(data['img'].data[0]))
-        # print(load_dict)
         print("json_outfile:" + self.branchout_dir + '/' + str(runner.epoch + 1) + '.json')
         with open(self.branchout_dir + '/' + str(runner.epoch + 1) + '.json', 'w') as outfile:
             json.dump(load_dict, outfile)
 
     def before_train_epoch(self, runner):
-        # for i, data in enumerate(runner.data_loader):
-        #     print(data)
+        # xiaohei[add]: read new ann_file 
         if runner.epoch == 0:
             return
         else:
             mmcv.mkdir_or_exist(osp.abspath(self.branchout_dir + '/' + str(runner.epoch) + '/'))
-            # print(runner.data_loader.dataset.ann_file)#### ToDo：读取新的注释
             self.cfg_data.train.ann_file = self.branchout_dir + '/' + str(runner.epoch) + '.json'
             next_dataset = build_dataset(self.cfg_data.train)
             runner.data_loader = build_dataloader(
@@ -102,7 +101,6 @@ class PostProcessHook(Hook):
                 dist=False, 
                 seed=self.cfg.seed)
             return
-        # 读取json文件
        
 def create_sub_mask_annotation(sub_mask):
 # Find contours (boundary lines) around each sub-mask
