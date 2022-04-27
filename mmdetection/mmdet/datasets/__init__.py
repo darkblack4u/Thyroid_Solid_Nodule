@@ -21,3 +21,4 @@ __all__ = [
     'ClassBalancedDataset', 'WIDERFaceDataset', 'DATASETS', 'PIPELINES',
     'build_dataset', 'ChenzhouDataset', 'PublicDataset'
 ]
+# xiaohei[add]: ChenzhouDataset and PublicDataset
