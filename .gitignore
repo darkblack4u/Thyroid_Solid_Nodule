@@ -1,14 +1,4 @@
 .vscode/
-data/
-data/origin/
-data/preprocess/chenzhou
-data/preprocess/chenzhou_aug
-data/preprocess/public
-data/preprocess/public_aug
-data/preprocess/coco
-code/mmdetection/data
-code/mmdetection/logs
-*.out
-code/data/.ipynb_checkpoints/
-code/yolo
-data/preprocess/
+mmdetection/process*
+mmdetection/INFO
+mmdetection/LOG.md
